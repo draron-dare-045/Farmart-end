@@ -11,6 +11,7 @@ dj-database-url = "*"
 whitenoise = "*"
 django-cors-headers = "*"
 python-dotenv = "*"
+django-redis = "*"
 
 [dev-packages]
 

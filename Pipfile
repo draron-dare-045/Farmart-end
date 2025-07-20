@@ -4,8 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
-djangorestframework = "*"
 djangorestframework-simplejwt = "*"
 gunicorn = "*"
 psycopg2-binary = "*"
@@ -17,4 +15,4 @@ python-dotenv = "*"
 [dev-packages]
 
 [requires]
-python_version = "3.11.9"
+python_version = "3.8"

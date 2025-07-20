@@ -12,6 +12,7 @@ whitenoise = "*"
 django-cors-headers = "*"
 python-dotenv = "*"
 django-redis = "*"
+requests = "*"
 
 [dev-packages]
 

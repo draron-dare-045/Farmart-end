@@ -13,6 +13,7 @@ django-cors-headers = "*"
 python-dotenv = "*"
 django-redis = "*"
 requests = "*"
+pillow = "*"
 
 [dev-packages]
 

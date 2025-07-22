@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, AnimalViewSet, OrderViewSet, MakePaymentView, MpesaCallbackView
+from .views import UserViewSet, AnimalViewSet, OrderViewSet, MakePaymentView, MpesaCallbackView, CurrentUserView
 
 
 router = DefaultRouter()
@@ -12,4 +12,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('make-payment/', MakePaymentView.as_view(), name='make-payment'),
     path('mpesa-callback/', MpesaCallbackView.as_view(), name='mpesa-callback'),
+    path('auth/users/me/', CurrentUserView.as_view(), name='current-user'),
 ]

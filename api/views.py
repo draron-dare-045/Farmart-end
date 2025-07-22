@@ -1,10 +1,9 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from .models import User, Animal, Order
+from .models import Animal, Order
 from .serializers import (
-    UserSerializer, AnimalSerializer,
+    AnimalSerializer,
     OrderReadSerializer, OrderWriteSerializer 
 )
 from .permissions import IsFarmerOrReadOnly, IsOwnerOrAdmin
@@ -61,25 +60,6 @@ class MpesaCallbackView(APIView):
         return Response({'status': 'ok'})
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-
-    def get_permissions(self):
-        if self.action == 'create':
-            self.permission_classes = [permissions.AllowAny]
-        elif self.action == 'me':
-            self.permission_classes = [permissions.IsAuthenticated]
-        else:
-            self.permission_classes = [permissions.IsAdminUser]
-        return super().get_permissions()
-
-    @action(detail=False, methods=['get'], url_path='me', permission_classes=[permissions.IsAuthenticated])
-    def me(self, request):
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
-
-
 class AnimalViewSet(viewsets.ModelViewSet):
     queryset = Animal.objects.filter(is_sold=False).order_by('-created_at')
     serializer_class = AnimalSerializer
@@ -113,7 +93,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         if self.request.user.is_staff:
             return queryset.all()
         
-        if self.request.user.user_type == User.Types.FARMER:
+        if self.request.user.user_type == self.request.user.Types.FARMER:
             return queryset.filter(items__animal__farmer=self.request.user).distinct()
 
         return queryset.filter(buyer=self.request.user)

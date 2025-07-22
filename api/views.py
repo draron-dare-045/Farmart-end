@@ -4,11 +4,19 @@ from rest_framework.response import Response
 from .models import Animal, Order
 from .serializers import (
     AnimalSerializer,
-    OrderReadSerializer, OrderWriteSerializer 
+    OrderReadSerializer, OrderWriteSerializer,
+    UserSerializer
 )
 from .permissions import IsFarmerOrReadOnly, IsOwnerOrAdmin
 from . import mpesa_api
 
+class UserProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated] # This endpoint requires authentication
+
+    def get(self, request):
+        # request.user is the currently logged-in user object
+        serializer = UserSerializer(request.user) 
+        return Response(serializer.data)
 
 class MakePaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]

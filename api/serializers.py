@@ -1,5 +1,13 @@
 from rest_framework import serializers
 from .models import User, Animal, Order, OrderItem
+from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
+from .models import User
+
+class CustomUserCreateSerializer(BaseUserCreateSerializer):
+    class Meta(BaseUserCreateSerializer.Meta):
+        model = User
+        fields = ('id', 'username', 'email', 'password', 'user_type')
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

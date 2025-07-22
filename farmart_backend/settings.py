@@ -1,5 +1,3 @@
-# farmart_backend/settings.py
-
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -14,20 +12,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ==============================================================================
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-
-
-IS_DEVELOPMENT = os.getenv('ENVIRONMENT', 'development') == 'development'
-DEBUG = os.getenv('DEBUG', 'False') == 'True' and IS_DEVELOPMENT
-
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+IS_DEVELOPMENT = ENVIRONMENT == 'development'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # ==============================================================================
-# APPLICATION DEFINITION
+# APPLICATIONS
 # ==============================================================================
 
 INSTALLED_APPS = [
@@ -37,19 +32,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'rest_framework_simplejwt',
-    'corsheaders',
-    'api',
     'djoser',
+    'corsheaders',
+
+    'api',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',    
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -61,9 +57,30 @@ ROOT_URLCONF = 'farmart_backend.urls'
 WSGI_APPLICATION = 'farmart_backend.wsgi.application'
 AUTH_USER_MODEL = 'api.User'
 
+# ==============================================================================
+# DATABASE
+# ==============================================================================
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}",
+        conn_max_age=600
+    )
+}
 
 # ==============================================================================
-# TEMPLATES AND INTERNATIONALIZATION
+# PASSWORD VALIDATION
+# ==============================================================================
+
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+# ==============================================================================
+# TEMPLATES
 # ==============================================================================
 
 TEMPLATES = [
@@ -82,34 +99,17 @@ TEMPLATES = [
     },
 ]
 
+# ==============================================================================
+# INTERNATIONALIZATION
+# ==============================================================================
+
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Africa/Nairobi'  
+TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
-
 # ==============================================================================
-# DATABASE CONFIGURATION
-# ==============================================================================
-
-
-DATABASES = {
-    'default': dj_database_url.config(
-        
-        default=f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}",
-        conn_max_age=600 
-    )
-}
-
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
-# ==============================================================================
-# STATIC AND MEDIA FILES
+# STATIC / MEDIA
 # ==============================================================================
 
 STATIC_URL = '/static/'
@@ -118,11 +118,18 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# ==============================================================================
+# CORS
+# ==============================================================================
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# ==============================================================================
+# DJOSER + JWT CONFIG
+# ==============================================================================
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -130,10 +137,26 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
-    )
+    ),
 }
 
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("JWT",),
+}
 
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'SERIALIZERS': {
+        'user_create': 'api.serializers.UserCreateSerializer',
+        'user': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
+    },
+}
+
+# ==============================================================================
+# CACHE
+# ==============================================================================
 
 if IS_DEVELOPMENT:
     CACHES = {
@@ -143,7 +166,6 @@ if IS_DEVELOPMENT:
         }
     }
 else:
-
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
@@ -154,18 +176,19 @@ else:
         }
     }
 
+# ==============================================================================
+# MPESA
+# ==============================================================================
 
-# --- MPESA CONFIGURATION ---
-MPESA_ENVIRONMENT = os.getenv('MPESA_ENVIRONMENT', 'sandbox') # Should be 'live' for production
+MPESA_ENVIRONMENT = os.getenv('MPESA_ENVIRONMENT', 'sandbox')
 MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
 MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
 MPESA_TRANSACTION_TYPE = os.getenv('MPESA_TRANSACTION_TYPE', 'CustomerPayBillOnline')
 MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
 
-
-backend_domain = os.getenv('BACKEND_DOMAIN', 'https://127.0.0.1:8000') # Default for dev
+backend_domain = os.getenv('BACKEND_DOMAIN', 'https://127.0.0.1:8000')
 if not backend_domain.startswith(('http://', 'https://')):
-    raise ValueError("BACKEND_DOMAIN environment variable must be a full URL (e.g., https://api.yourdomain.com)")
+    raise ValueError("BACKEND_DOMAIN must be a full URL (e.g., https://api.yourdomain.com)")
 
 MPESA_CALLBACK_URL = f"{backend_domain.rstrip('/')}/api/mpesa-callback/"

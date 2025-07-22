@@ -5,7 +5,6 @@ from .views import (
     OrderViewSet,
     MakePaymentView,
     MpesaCallbackView,
-    CurrentUserView
 )
 
 router = DefaultRouter()
@@ -16,5 +15,4 @@ urlpatterns = [
     path('', include(router.urls)),
     path('make-payment/', MakePaymentView.as_view(), name='make-payment'),
     path('mpesa-callback/', MpesaCallbackView.as_view(), name='mpesa-callback'),
-    path('me/', CurrentUserView.as_view(), name='current-user'),
 ]

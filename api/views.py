@@ -1,22 +1,39 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.contrib.auth import get_user_model
+
 from .models import Animal, Order
 from .serializers import (
     AnimalSerializer,
     OrderReadSerializer, OrderWriteSerializer,
-    UserSerializer
+    UserSerializer,
+    UserRegistrationSerializer
 )
 from .permissions import IsFarmerOrReadOnly, IsOwnerOrAdmin
 from . import mpesa_api
 
+User = get_user_model()
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Or [permissions.IsAdminUser] if you prefer
+
+
 class UserProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated] # This endpoint requires authentication
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        # request.user is the currently logged-in user object
-        serializer = UserSerializer(request.user) 
+        serializer = UserSerializer(request.user)
         return Response(serializer.data)
+    
+class RegisterUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserRegistrationSerializer
+
 
 class MakePaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -33,7 +50,7 @@ class MakePaymentView(APIView):
 
         if not phone_number:
             return Response({'error': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if order.status != Order.OrderStatus.CONFIRMED:
             return Response({'error': f'Order cannot be paid for in its current state ({order.status}).'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -56,7 +73,7 @@ class MpesaCallbackView(APIView):
                 if item['Name'] == 'AccountReference':
                     order_id = item['Value']
                     break
-            
+
             if order_id:
                 try:
                     order = Order.objects.get(id=order_id)
@@ -100,7 +117,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         queryset = Order.objects.prefetch_related('items__animal')
         if self.request.user.is_staff:
             return queryset.all()
-        
+
         if self.request.user.user_type == self.request.user.Types.FARMER:
             return queryset.filter(items__animal__farmer=self.request.user).distinct()
 

@@ -11,7 +11,7 @@ class User(AbstractUser):
 
     base_type = Types.BUYER
 
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, blank=False, null=False)
 
     user_type = models.CharField(
         max_length=50,

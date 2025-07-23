@@ -8,20 +8,34 @@ class CustomUserCreateSerializer(BaseUserCreateSerializer):
         model = User
         fields = ('id', 'username', 'email', 'password', 'user_type', 'phone_number', 'location')
 
+# serializers.py
+from rest_framework import serializers
+from .models import User
+
 class UserSerializer(serializers.ModelSerializer):
+    re_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 'user_type', 'phone_number', 'location']
+        fields = ['id', 'username', 'email', 'password', 're_password', 'user_type', 'phone_number', 'location']
         extra_kwargs = {
-            'password': {'write_only': True, 'style': {'input_type': 'password'}}
+            'password': {'write_only': True, 'style': {'input_type': 'password'}},
+            'email': {'required': True}
         }
 
+    def validate(self, data):
+        if data['password'] != data['re_password']:
+            raise serializers.ValidationError({"re_password": "Passwords do not match."})
+        return data
+
     def create(self, validated_data):
+        validated_data.pop('re_password')  # Remove re_password before creating the user
         password = validated_data.pop('password')
         user = User(**validated_data)
         user.set_password(password)
         user.save()
         return user
+
 
 
 class AnimalSerializer(serializers.ModelSerializer):

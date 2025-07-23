@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 
 class User(AbstractUser):
     class Types(models.TextChoices):
@@ -11,7 +12,7 @@ class User(AbstractUser):
     base_type = Types.BUYER
 
     user_type = models.CharField(max_length=50, choices=Types.choices, default=base_type)
-    phone_number = models.CharField(max_length=15, blank=True, default='')
+    phone_number = models.CharField(max_length=15, blank=True, default='', validators=[RegexValidator(r'^\+?\d{9,15}$', message="Enter a valid phone number.")], )
     location = models.CharField(max_length=255, blank=True, default='')
 
     groups = models.ManyToManyField(

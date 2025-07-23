@@ -12,31 +12,30 @@ class CustomUserCreateSerializer(BaseUserCreateSerializer):
 from rest_framework import serializers
 from .models import User
 
+# serializers.py
+
 class UserSerializer(serializers.ModelSerializer):
-    re_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    re_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 're_password', 'user_type', 'phone_number', 'location']
+        fields = ['username', 'email', 'password', 're_password', 'user_type', 'phone_number', 'location']
         extra_kwargs = {
-            'password': {'write_only': True, 'style': {'input_type': 'password'}},
-            'email': {'required': True}
+            'password': {'write_only': True}
         }
 
-    def validate(self, data):
-        if data['password'] != data['re_password']:
+    def validate(self, attrs):
+        if attrs['password'] != attrs['re_password']:
             raise serializers.ValidationError({"re_password": "Passwords do not match."})
-        return data
+        return attrs
 
     def create(self, validated_data):
-        validated_data.pop('re_password')  # Remove re_password before creating the user
-        password = validated_data.pop('password')
+        password = validated_data.pop('password')  # ✅ extract password
+        validated_data.pop('re_password')          # ✅ remove re_password
         user = User(**validated_data)
-        user.set_password(password)
+        user.set_password(password)                # ✅ hash password properly
         user.save()
         return user
-
-
 
 class AnimalSerializer(serializers.ModelSerializer):
     farmer_username = serializers.CharField(source='farmer.username', read_only=True)

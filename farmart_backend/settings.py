@@ -187,7 +187,7 @@ MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
 MPESA_TRANSACTION_TYPE = os.getenv('MPESA_TRANSACTION_TYPE', 'CustomerPayBillOnline')
 MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
 
-backend_domain = os.getenv('BACKEND_DOMAIN', 'https://127.0.0.1:8000')
+backend_domain = os.getenv('BACKEND_DOMAIN', 'http://localhost:5173')
 if not backend_domain.startswith(('http://', 'https://')):
     raise ValueError("BACKEND_DOMAIN must be a full URL (e.g., https://api.yourdomain.com)")
 

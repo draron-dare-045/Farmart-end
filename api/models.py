@@ -4,10 +4,6 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
-from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.db import models
-from django.core.validators import RegexValidator
-
 class User(AbstractUser):
     class Types(models.TextChoices):
         BUYER = 'BUYER', 'Buyer'
@@ -15,10 +11,8 @@ class User(AbstractUser):
 
     base_type = Types.BUYER
 
-    # Enforce unique email
     email = models.EmailField(unique=True)
 
-    # Custom fields
     user_type = models.CharField(
         max_length=50,
         choices=Types.choices,
@@ -41,7 +35,6 @@ class User(AbstractUser):
         default=''
     )
 
-    # Fix group and permission M2M to avoid clashes
     groups = models.ManyToManyField(
         Group,
         verbose_name='groups',
@@ -58,6 +51,9 @@ class User(AbstractUser):
         related_name="api_user_permissions_set",
         related_query_name="user",
     )
+
+    USERNAME_FIELD = 'username'  # Keep username login
+    REQUIRED_FIELDS = ['email', 'user_type', 'phone_number', 'location']
 
     def __str__(self):
         return f"{self.username} ({self.user_type})"

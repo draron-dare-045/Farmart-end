@@ -30,12 +30,13 @@ class UserSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        password = validated_data.pop('password')  # ✅ extract password
-        validated_data.pop('re_password')          # ✅ remove re_password
+        password = validated_data.pop('password')
+        validated_data.pop('re_password')
         user = User(**validated_data)
-        user.set_password(password)                # ✅ hash password properly
+        user.set_password(password)
         user.save()
         return user
+
 
 class AnimalSerializer(serializers.ModelSerializer):
     farmer_username = serializers.CharField(source='farmer.username', read_only=True)

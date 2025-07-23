@@ -11,7 +11,7 @@ class CustomUserCreateSerializer(BaseUserCreateSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'user_type', 'phone_number', 'location']
+        fields = ['id', 'username', 'email', 'password', 'user_type', 'phone_number', 'location']
         extra_kwargs = {
             'password': {'write_only': True, 'style': {'input_type': 'password'}}
         }
@@ -22,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
 
 class AnimalSerializer(serializers.ModelSerializer):
     farmer_username = serializers.CharField(source='farmer.username', read_only=True)

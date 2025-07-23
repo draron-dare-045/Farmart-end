@@ -4,6 +4,10 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
+from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.db import models
+from django.core.validators import RegexValidator
+
 class User(AbstractUser):
     class Types(models.TextChoices):
         BUYER = 'BUYER', 'Buyer'
@@ -11,15 +15,38 @@ class User(AbstractUser):
 
     base_type = Types.BUYER
 
-    user_type = models.CharField(max_length=50, choices=Types.choices, default=base_type)
-    phone_number = models.CharField(max_length=15, blank=True, default='', validators=[RegexValidator(r'^\+?\d{9,15}$', message="Enter a valid phone number.")], )
-    location = models.CharField(max_length=255, blank=True, default='')
+    # Enforce unique email
+    email = models.EmailField(unique=True)
 
+    # Custom fields
+    user_type = models.CharField(
+        max_length=50,
+        choices=Types.choices,
+        default=base_type
+    )
+    phone_number = models.CharField(
+        max_length=15,
+        blank=True,
+        default='',
+        validators=[
+            RegexValidator(
+                r'^\+?\d{9,15}$',
+                message="Enter a valid phone number."
+            )
+        ],
+    )
+    location = models.CharField(
+        max_length=255,
+        blank=True,
+        default=''
+    )
+
+    # Fix group and permission M2M to avoid clashes
     groups = models.ManyToManyField(
         Group,
         verbose_name='groups',
         blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        help_text='The groups this user belongs to.',
         related_name="api_user_set",
         related_query_name="user",
     )
